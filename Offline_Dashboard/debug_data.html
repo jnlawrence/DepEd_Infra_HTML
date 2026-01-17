@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Data Loading</title>
+</head>
+
+<body>
+    <h1>Debug Data Loading</h1>
+    <div id="output" style="font-family: monospace; white-space: pre-wrap;">Log:</div>
+
+    <script src="dashboard_data.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        function log(msg) {
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        log("Script loaded.");
+        try {
+            if (typeof parsedDatabase !== 'undefined') {
+                log("parsedDatabase is DEFINED.");
+                log("Type: " + typeof parsedDatabase);
+                log("Is Array: " + Array.isArray(parsedDatabase));
+                if (Array.isArray(parsedDatabase)) {
+                    log("Length: " + parsedDatabase.length);
+                    if (parsedDatabase.length > 0) {
+                        log("First item: " + JSON.stringify(parsedDatabase[0], null, 2).substring(0, 200) + "...");
+                        log("First item 'region' property: " + parsedDatabase[0].region);
+                    }
+                }
+            } else {
+                log("ERROR: parsedDatabase is UNDEFINED.");
+            }
+        } catch (e) {
+            log("EXCEPTION: " + e.message);
+        }
+    </script>
+</body>
+
+</html>

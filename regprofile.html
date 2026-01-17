@@ -1,0 +1,2481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepEd ACTION Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #1e3a8a, #3b82f6);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom scrollbar for sidebar */
+        aside::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        aside::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        aside::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        aside::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Modal Animation */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        /* Scrollbar for leadership list */
+        .leadership-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .leadership-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .leadership-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Sidebar / Filter Panel -->
+    <aside class="w-80 bg-white border-r border-slate-200 flex flex-col shadow-xl z-20 h-full">
+        <div class="p-8 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 rounded-lg shadow-lg">
+                    <i data-lucide="layout-dashboard" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 tracking-tight mb-1">ACTION</h1>
+                    <p class="text-[10px] text-blue-600 font-medium leading-tight">Addressing Critical Targets on
+                        Infrastructure and Operational Needs</p>
+                </div>
+            </div>
+            <!-- Navigation Controls -->
+            <div class="flex gap-2 mt-4">
+                <button id="nav-back" disabled
+                    class="flex-1 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </button>
+                <button id="nav-fwd" disabled
+                    class="flex-1 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto space-y-6">
+            <div class="space-y-4">
+                <div class="group">
+                    <label
+                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within:text-blue-600 transition-colors">Region</label>
+                    <div class="relative">
+                        <select id="region-select"
+                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 block p-3 pr-10 transition-all outline-none font-medium">
+                            <option value="">Select Region</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label
+                        class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-focus-within:text-blue-600 transition-colors">Province</label>
+                    <div class="relative">
+                        <select id="province-select" disabled
+                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 block p-3 pr-10 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Select Province</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- View Mode Toggle (Visible when Province is selected) -->
+                <div class="bg-slate-100/50 p-1 rounded-lg flex gap-1 mb-4 hidden" id="view-toggles">
+                    <button
+                        class="flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700"
+                        id="toggle-division" onclick="setViewMode('division')">Division</button>
+                    <button
+                        class="flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700"
+                        id="toggle-district" onclick="setViewMode('district')">District</button>
+                    <button
+                        class="flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-700"
+                        id="toggle-municipality" onclick="setViewMode('municipality')">Muni</button>
+                </div>
+
+                <!-- Filter Mode Toggle -->
+                <div class="bg-slate-100/50 p-1 rounded-lg flex gap-1 mb-4 hidden" id="filter-toggle-container">
+                    <button
+                        class="flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all shadow-sm bg-white text-blue-600 ring-1 ring-black/5"
+                        id="mode-district">
+                        By District
+                    </button>
+                    <button
+                        class="flex-1 py-1.5 px-3 rounded-md text-xs font-bold text-slate-500 hover:bg-slate-200/50 transition-all"
+                        id="mode-muni">
+                        By Municipality
+                    </button>
+                </div>
+
+                <!-- Dynamic Selectors based on Toggle -->
+                <div class="group hidden" id="division-group">
+                    <div class="relative">
+                        <select id="division-select" disabled
+                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 block p-3 pr-10 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Select Division</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="group hidden" id="district-group">
+                    <div class="relative">
+                        <select id="district-select" disabled
+                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 block p-3 pr-10 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="group hidden" id="municipality-group">
+                    <div class="relative">
+                        <select id="municipality-select" disabled
+                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 block p-3 pr-10 transition-all outline-none font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Select Municipality</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button id="reset-btn"
+                class="w-full py-3 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-700 border border-transparent hover:border-slate-200 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filters
+            </button>
+        </div>
+
+        <div class="p-6 bg-slate-50 border-t border-slate-200">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="mb-1">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Last Updated</p>
+                    <p class="text-xs font-bold text-slate-700">Jan 09, 2026 11:05 AM</p>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2">Source: National School Building Inventory (NSBI) SY
+                    2022-2023</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 relative">
+        <!-- Background Decor -->
+        <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-blue-50 to-slate-50 -z-10"></div>
+        <div class="absolute top-0 right-0 w-1/3 h-96 bg-gradient-to-bl from-blue-100/40 to-transparent blur-3xl -z-10">
+        </div>
+
+        <div class="max-w-7xl mx-auto p-4 md:p-8 lg:p-12">
+
+            <!-- Welcome State -->
+            <div id="welcome-state"
+                class="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 fade-in">
+                <div
+                    class="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center mb-4 ring-1 ring-slate-100">
+                    <i data-lucide="bar-chart-2" class="w-12 h-12 text-blue-600"></i>
+                </div>
+                <div class="space-y-4 max-w-lg">
+                    <h2 class="text-4xl font-bold text-slate-900 tracking-tight">Select a Location</h2>
+                    <p class="text-lg text-slate-500">Use the filters on the left to drill down to a specific Region,
+                        Division, District, or Municipality to view the comprehensive profile.</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="hidden space-y-8">
+
+                <!-- Headers -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 fade-in"
+                    style="animation-delay: 0.1s">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div id="location-badge"
+                                class="px-3 py-1 rounded-full bg-blue-100/80 text-blue-700 text-xs font-bold uppercase tracking-wide backdrop-blur-sm border border-blue-200">
+                                Region I
+                            </div>
+                        </div>
+                        <h2 id="main-title" class="text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+                            Ilocos Region</h2>
+                        <p id="sub-title" class="text-lg text-slate-500 mt-2 font-light">Regional Profile Summary</p>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: LEADERSHIP (Full Width) -->
+                <div class="w-full fade-in" style="animation-delay: 0.15s">
+                    <div
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col relative overflow-hidden">
+
+                        <!-- Header -->
+                        <div class="flex items-center gap-4 mb-6 border-b border-slate-50 pb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 tracking-tight" id="leadership-title">
+                                    Political Leadership & Governance</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Container (Grid) -->
+                        <div id="leadership-content"
+                            class="w-full max-h-64 overflow-y-auto leadership-scroll grid grid-cols-1 md:grid-cols-2 gap-4 px-1">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 1: Schools & Enrolment -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in" style="animation-delay: 0.2s">
+
+                    <!-- School Count -->
+                    <div onclick="showBreakdown('schools')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-indigo-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-500 transition-colors">
+                                    Total Schools</p>
+                                <h3 id="school-count" class="text-4xl font-bold text-slate-900 mt-2 gradient-text">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-indigo-200">
+                                <i data-lucide="school" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-indigo-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+                    <!-- Enrolment Stats -->
+                    <div onclick="showBreakdown('enrolment')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-emerald-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-500 transition-colors">
+                                    Total Enrolment</p>
+                                <h3 id="enrolment-count"
+                                    class="text-4xl font-bold text-slate-900 mt-2 text-emerald-600">0</h3>
+                            </div>
+                            <div
+                                class="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-emerald-200">
+                                <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-emerald-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+                </div>
+
+                <!-- ROW 2: Classrooms (Total, Req & Shortage) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-in" style="animation-delay: 0.3s">
+
+                    <!-- Total Classrooms -->
+                    <div onclick="showBreakdown('totalClassrooms')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-violet-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-violet-500 transition-colors">
+                                    Total Classrooms</p>
+                                <h3 id="total-classrooms"
+                                    class="text-4xl font-bold text-slate-900 mt-2 text-violet-600">0</h3>
+                            </div>
+                            <div
+                                class="p-3 bg-violet-50 text-violet-600 rounded-xl group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-violet-200">
+                                <i data-lucide="blinds" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-violet-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+                    <!-- Classroom Requirement -->
+                    <div onclick="showBreakdown('classroomReq')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-blue-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-500 transition-colors">
+                                    Classroom Requirement</p>
+                                <h3 id="classroom-req" class="text-4xl font-bold text-slate-900 mt-2 text-blue-600">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-blue-200">
+                                <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-blue-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+                    <!-- Classroom Shortage -->
+                    <div onclick="showBreakdown('classroomShortage')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-red-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-red-500 transition-colors">
+                                    Estimated Classroom Shortage</p>
+                                <h3 id="classroom-shortage" class="text-4xl font-bold text-slate-900 mt-2 text-red-600">
+                                    0</h3>
+                            </div>
+                            <div
+                                class="p-3 bg-red-50 text-red-600 rounded-xl group-hover:bg-red-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-red-200">
+                                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-red-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+                </div>
+
+                <!-- ROW 3: Infrastructure (Construction & Repairs) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 fade-in" style="animation-delay: 0.4s">
+
+                    <!-- New Construction 2025 -->
+                    <div onclick="showBreakdown('ncTarget')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-cyan-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-cyan-500 transition-colors">
+                                    New Construction Target</p>
+                                <h3 id="newcon-target" class="text-4xl font-bold text-slate-900 mt-2 text-cyan-600">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-cyan-50 text-cyan-600 rounded-xl group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-cyan-200">
+                                <i data-lucide="hammer" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-cyan-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+                    <!-- Major Repairs -->
+                    <div onclick="showBreakdown('majorRepairs')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-rose-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-rose-500 transition-colors">
+                                    Major Repairs</p>
+                                <h3 id="major-repairs" class="text-4xl font-bold text-slate-900 mt-2 text-rose-600">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-rose-200">
+                                <i data-lucide="wrench" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-rose-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+                    <!-- Minor Repairs -->
+                    <div onclick="showBreakdown('minorRepairs')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-amber-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-500 transition-colors">
+                                    Minor Repairs</p>
+                                <h3 id="minor-repairs" class="text-4xl font-bold text-slate-900 mt-2 text-amber-500">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-amber-200">
+                                <i data-lucide="hammer" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-amber-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+
+
+                    <!-- Total Building Loss 2022 Prior -->
+
+                    <!-- Total Building Loss Consolidated -->
+                    <div onclick="showBreakdown('lossUnified')"
+                        class="card bg-white p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 hover:shadow-lg hover:border-orange-200 cursor-pointer transition-all duration-300 flex flex-col justify-between group h-full">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-orange-500 transition-colors">
+                                    QRF Total Damaged CL</p>
+                                <h3 id="total-building-loss-unified"
+                                    class="text-4xl font-bold text-slate-900 mt-2 text-orange-500">0
+                                </h3>
+                            </div>
+                            <div
+                                class="p-3 bg-orange-50 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-orange-200">
+                                <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 flex items-center gap-1 group-hover:text-orange-400">View
+                            Breakdown <i data-lucide="chevron-right" class="w-3 h-3"></i></p>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Future Projects & Land Management -->
+                <!-- ROW 4 -->
+                <div class="w-full fade-in" style="animation-delay: 0.5s">
+                    <div class="mb-4 flex items-center gap-2">
+                        <div class="p-1.5 bg-teal-100 rounded-lg">
+                            <i data-lucide="briefcase" class="w-4 h-4 text-teal-700"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-700">2026 Infrastructure Masterlist</h3>
+                    </div>
+
+                    <!-- Unified Grid: 3x3 = 9 Items -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+
+                        <!-- No. of Sites -->
+                        <div onclick="showBreakdown('noSites')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total No. of Sites
+                                </p>
+                                <i data-lucide="map-pin" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="no-sites" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                        <!-- Single Storey -->
+                        <div onclick="showBreakdown('singleStorey')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-sky-200 hover:shadow-lg hover:shadow-sky-100/50 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start mb-2">
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wide group-hover:text-sky-500 transition-colors">
+                                    Single Storey</p>
+                                <div
+                                    class="p-3 bg-sky-50 text-sky-600 rounded-xl group-hover:bg-sky-600 group-hover:text-white transition-all shadow-sm group-hover:shadow-sky-200">
+                                    <i data-lucide="minus-square" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+                            <h3 id="single-storey"
+                                class="text-4xl font-bold text-slate-800 mt-1 group-hover:text-sky-700 transition-colors">
+                                0</h3>
+                        </div>
+
+                        <!-- Multistorey -->
+                        <div onclick="showBreakdown('multiStorey')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start mb-2">
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wide group-hover:text-violet-500 transition-colors">
+                                    Multistorey</p>
+                                <div
+                                    class="p-3 bg-violet-50 text-violet-600 rounded-xl group-hover:bg-violet-600 group-hover:text-white transition-all shadow-sm group-hover:shadow-violet-200">
+                                    <i data-lucide="layers" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+                            <h3 id="multi-storey"
+                                class="text-4xl font-bold text-slate-800 mt-1 group-hover:text-violet-700 transition-colors">
+                                0</h3>
+                        </div>
+
+                        <!-- No. of CLs -->
+                        <div onclick="showBreakdown('noCLs')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total No. of
+                                    Classrooms
+                                </p>
+                                <i data-lucide="layout-grid" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="no-cls" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                        <!-- With Site Ownership -->
+                        <div onclick="showBreakdown('siteOwnership')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">With Site Ownership
+                                </p>
+                                <i data-lucide="check-circle-2" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="site-ownership" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                        <!-- With Buildable Space -->
+                        <div onclick="showBreakdown('buildableSpace')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">With Buildable Space
+                                </p>
+                                <i data-lucide="maximize" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="buildable-space" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                        <!-- With Geotech Report -->
+                        <div onclick="showBreakdown('geotechReport')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">With Geotech
+                                    Report
+                                </p>
+                                <i data-lucide="file-text" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="geotech-report" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                        <!-- Site Readiness -->
+                        <div onclick="showBreakdown('siteReadiness')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/50 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start mb-2">
+                                <p
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wide group-hover:text-emerald-500 transition-colors">
+                                    Viable Sites</p>
+                                <div
+                                    class="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm group-hover:shadow-emerald-200">
+                                    <i data-lucide="folder-check" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+                            <h3 id="site-readiness"
+                                class="text-4xl font-bold text-slate-800 mt-1 group-hover:text-emerald-700 transition-colors">
+                                0</h3>
+                        </div>
+
+                        <!-- LMS -->
+                        <div onclick="showBreakdown('lms')"
+                            class="card bg-white p-6 rounded-2xl shadow-[0_2px_15px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col justify-between h-full hover:border-teal-200 transition-colors cursor-pointer">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Last Mile School
+                                </p>
+                                <i data-lucide="monitor" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                            <h3 id="lms" class="text-4xl font-bold text-slate-800">0</h3>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Detailed Modal (Same as before) -->
+    <div id="breakdown-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <!-- Background backdrop -->
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop">
+        </div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-7xl opacity-0 scale-95"
+                    id="modal-panel">
+                    <div class="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 leading-6" id="modal-title">Metric Breakdown
+                            </h3>
+                            <p class="text-sm text-slate-500 mt-1" id="modal-subtitle">Loading details...</p>
+                        </div>
+                        <div class="text-right mr-6">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total</p>
+                            <p class="text-3xl font-extrabold text-blue-600 leading-none mt-1" id="modal-total-display">
+                                0</p>
+                        </div>
+                        <button type="button" onclick="closeModal()"
+                            class="rounded-full p-2 bg-white text-slate-400 hover:text-slate-500 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div id="modal-body-content" class="px-8 py-6 max-h-[60vh] overflow-y-auto bg-white">
+                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider w-12">
+                                            #</th>
+                                        <th scope="col"
+                                            class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                            School ID</th>
+                                        <th scope="col"
+                                            class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                            School Name</th>
+                                        <th scope="col"
+                                            class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                            Municipality</th>
+                                        <th scope="col"
+                                            class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider"
+                                            id="modal-metric-header">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-slate-100" id="modal-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-8 py-4 flex justify-end items-center border-t border-slate-100">
+                        <button type="button" onclick="closeModal()"
+                            class="inline-flex w-full justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:ml-3 sm:w-auto transition-colors">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script same as before -->
+    <script src="dashboard_data.js?v=3"></script>
+    <!-- <script src="governors_data.js"></script> -->
+    <script>
+        // Use external data if available, otherwise fallback to empty or mock
+        let database = [];
+        if (typeof parsedDatabase !== 'undefined') {
+            database = parsedDatabase; // parsedDatabase is now the full array
+        } else {
+            console.warn("External dashboard_data.js not loaded. Dashboard will be empty.");
+        }
+        // Mock data block removed.
+
+
+        // DOM Elements and Init Logic remain same...
+        const regionSelect = document.getElementById('region-select');
+        const provinceSelect = document.getElementById('province-select');
+        const divisionSelect = document.getElementById('division-select');
+        const districtSelect = document.getElementById('district-select');
+        const municipalitySelect = document.getElementById('municipality-select');
+
+        const viewToggles = document.getElementById('view-toggles');
+
+        // Toggles
+        const btnToggleDiv = document.getElementById('toggle-division');
+        const btnToggleDist = document.getElementById('toggle-district');
+        const btnToggleMuni = document.getElementById('toggle-municipality');
+
+        // Groups
+        const divGroup = document.getElementById('division-group');
+        const distGroup = document.getElementById('district-group');
+        const muniGroup = document.getElementById('municipality-group');
+
+        // Removed old selectors logic
+        const resetBtn = document.getElementById('reset-btn');
+
+        const welcomeState = document.getElementById('welcome-state');
+        const dashboardContent = document.getElementById('dashboard-content');
+
+        const mainTitle = document.getElementById('main-title');
+        const subTitle = document.getElementById('sub-title');
+        const locationBadge = document.getElementById('location-badge');
+
+        const leadershipTitle = document.getElementById('leadership-title');
+        const leadershipContent = document.getElementById('leadership-content');
+
+        const schoolCount = document.getElementById('school-count');
+        const enrolmentCount = document.getElementById('enrolment-count');
+        const classroomReq = document.getElementById('classroom-req');
+        const totalClassrooms = document.getElementById('total-classrooms');
+        const classroomShortage = document.getElementById('classroom-shortage');
+        const newConTarget = document.getElementById('newcon-target');
+        const majorRepairs = document.getElementById('major-repairs');
+        const minorRepairs = document.getElementById('minor-repairs');
+        const totalBuildingLossUnified = document.getElementById('total-building-loss-unified');
+
+        // New Element Bindings
+        const lms = document.getElementById('lms');
+        const noSites = document.getElementById('no-sites');
+        const singleStorey = document.getElementById('single-storey');
+        const multiStorey = document.getElementById('multi-storey');
+        const noCLs = document.getElementById('no-cls');
+        const siteOwnership = document.getElementById('site-ownership');
+        const buildableSpace = document.getElementById('buildable-space');
+        const geotechReport = document.getElementById('geotech-report');
+        const siteReadiness = document.getElementById('site-readiness');
+
+        const modal = document.getElementById('breakdown-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalPanel = document.getElementById('modal-panel');
+        const modalTitle = document.getElementById('modal-title');
+        const modalSubtitle = document.getElementById('modal-subtitle');
+        const modalMetricHeader = document.getElementById('modal-metric-header');
+        const modalTableBody = document.getElementById('modal-table-body');
+
+        let currentLevel = null;
+        let currentData = null; // Pointer to current object (Region, Province, etc.)
+        let currentLocationName = "";
+        let viewMode = 'division'; // 'division', 'district', 'municipality'
+
+        // History Navigation State
+        let historyStack = [];
+        let forwardStack = [];
+        let isNavigating = false;
+        let isProgrammatic = false;
+        let lastState = null;
+
+        const btnBack = document.getElementById('nav-back');
+        const btnFwd = document.getElementById('nav-fwd');
+
+        // Create Icons
+        lucide.createIcons();
+
+        // DEBUGGING: Catch errors
+        window.onerror = function (msg, url, line) {
+            console.error("Error: " + msg + "\nLine: " + line);
+        };
+
+        if (!database || database.length === 0) {
+            console.warn("Database is empty! check dashboard_data.js");
+        }
+
+        // --- Event Listeners for Selectors ---
+
+        // 1. Region Change
+        regionSelect.addEventListener('input', () => {
+            const selectedRegion = regionSelect.value;
+
+            // Update Province Options
+            updateProvinceOptions(selectedRegion);
+
+            // Reset lower levels
+            resetSelect(divisionSelect, "Select Division");
+            resetSelect(districtSelect, "Select District");
+            resetSelect(municipalitySelect, "Select Municipality");
+
+            // Disable lower levels
+            provinceSelect.disabled = !selectedRegion;
+            divisionSelect.disabled = true;
+            districtSelect.disabled = true;
+            municipalitySelect.disabled = true;
+
+            // Update Dashboard
+            if (selectedRegion) {
+                const regData = database.find(r => r.name === selectedRegion);
+                if (regData) {
+                    updateDashboard('region', regData);
+                }
+            } else {
+                updateDashboard('national');
+            }
+        });
+
+        // 2. Province Change
+        provinceSelect.addEventListener('input', () => {
+            const selectedRegion = regionSelect.value;
+            const selectedProvince = provinceSelect.value;
+
+            // Find Province Data
+            const regData = database.find(r => r.name === selectedRegion);
+            if (!regData) return;
+            const provData = regData.provinces.find(p => p.name === selectedProvince);
+
+            // Update Lower Options based on Toggle or just prepare them all?
+            // We usually populate them when the Province is active.
+            if (provData) {
+                updateLowerLevelOptions(provData);
+                updateDashboard('province', provData);
+
+                // Show toggles
+                viewToggles.classList.remove('hidden');
+
+                // Default view mode division? Or keep current?
+                // Let's ensure the correct selector is shown based on current viewMode
+                updateDynamicSelectors();
+            } else {
+                // Reset if no province selected (back to Region view)
+                resetSelect(divisionSelect, "Select Division");
+                resetSelect(districtSelect, "Select District");
+                resetSelect(municipalitySelect, "Select Municipality");
+                viewToggles.classList.add('hidden');
+
+                // Hide all lower groups
+                divGroup.classList.add('hidden');
+                distGroup.classList.add('hidden');
+                muniGroup.classList.add('hidden');
+
+                updateDashboard('region', regData);
+            }
+        });
+
+        // 3. Division Change
+        divisionSelect.addEventListener('input', () => {
+            const val = divisionSelect.value;
+            if (val) {
+                const provData = getActiveProvinceData();
+                const divData = provData.divisions.find(d => d.name === val);
+                if (divData) updateDashboard('division', divData);
+            } else {
+                // Revert to Province View
+                updateDashboard('province', getActiveProvinceData());
+            }
+        });
+
+        // 4. District Change
+        districtSelect.addEventListener('input', () => {
+            const val = districtSelect.value;
+            if (val) {
+                const provData = getActiveProvinceData();
+                const distData = provData.districts.find(d => d.name === val);
+                if (distData) updateDashboard('district', distData);
+            } else {
+                updateDashboard('province', getActiveProvinceData());
+            }
+        });
+
+        // 5. Municipality Change
+        municipalitySelect.addEventListener('input', () => {
+            const val = municipalitySelect.value;
+            if (val) {
+                const provData = getActiveProvinceData();
+                const muniData = provData.municipalities.find(m => m.name === val);
+                if (muniData) updateDashboard('municipality', muniData);
+            } else {
+                updateDashboard('province', getActiveProvinceData());
+            }
+        });
+
+
+        // --- Helper Functions ---
+
+        function updateProvinceOptions(regionName) {
+            resetSelect(provinceSelect, "Select Province");
+            if (!regionName) return;
+
+            const regData = database.find(r => r.name === regionName);
+            if (regData && regData.provinces) {
+                // Sort provinces
+                const sortedProvs = regData.provinces.sort((a, b) => a.name.localeCompare(b.name));
+                sortedProvs.forEach(p => {
+                    if (!p.name) return;
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = p.name;
+                    provinceSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function updateLowerLevelOptions(provData) {
+            // Update Division
+            resetSelect(divisionSelect, "Select Division");
+            if (provData.divisions) {
+                provData.divisions.forEach(d => {
+                    if (!d.name) return;
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    divisionSelect.appendChild(opt);
+                });
+            }
+
+            // Update District
+            resetSelect(districtSelect, "Select District");
+            if (provData.districts) {
+                provData.districts.forEach(d => {
+                    if (!d.name) return;
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    districtSelect.appendChild(opt);
+                });
+            }
+
+            // Update Municipality
+            resetSelect(municipalitySelect, "Select Municipality");
+            if (provData.municipalities) {
+                provData.municipalities.forEach(m => {
+                    if (!m.name) return;
+                    const opt = document.createElement('option');
+                    opt.value = m.name;
+                    opt.textContent = m.name;
+                    municipalitySelect.appendChild(opt);
+                });
+            }
+        }
+
+        function resetSelect(selectParams, defaultText) {
+            selectParams.innerHTML = `<option value="">${defaultText}</option>`;
+            selectParams.disabled = true;
+            selectParams.value = "";
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+
+            // Clear sub-selectors so we don't carry over selections
+            divisionSelect.value = "";
+            districtSelect.value = "";
+            municipalitySelect.value = "";
+
+            updateToggleStyles();
+            updateDynamicSelectors();
+
+            // Always refresh to Province level when switching modes
+            // This ensures we show the Breakdown Grid for the new mode (Divisions/Districts/Munis)
+            // even if we were previously deep-dived into a specific Municipality.
+            const pData = getActiveProvinceData();
+            if (pData) {
+                updateDashboard('province', pData);
+            }
+        }
+
+        function updateDynamicSelectors() {
+            // Hide all first
+            divGroup.classList.add('hidden');
+            distGroup.classList.add('hidden');
+            muniGroup.classList.add('hidden');
+
+            // Enable only active one (if province is selected)
+            const isProvSelected = !!provinceSelect.value;
+
+            if (viewMode === 'division') {
+                divGroup.classList.remove('hidden');
+                divisionSelect.disabled = !isProvSelected;
+            } else if (viewMode === 'district') {
+                distGroup.classList.remove('hidden');
+                districtSelect.disabled = !isProvSelected;
+            } else if (viewMode === 'municipality') {
+                muniGroup.classList.remove('hidden');
+                municipalitySelect.disabled = !isProvSelected;
+            }
+        }
+
+        function updateToggleStyles() {
+            // Helper to set active class on buttons
+            const setStyle = (btn, active) => {
+                if (active) {
+                    btn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'ring-1', 'ring-black/5');
+                    btn.classList.remove('text-slate-500', 'hover:text-slate-700');
+                } else {
+                    btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm', 'ring-1', 'ring-black/5');
+                    btn.classList.add('text-slate-500', 'hover:text-slate-700');
+                }
+            };
+
+            setStyle(btnToggleDiv, viewMode === 'division');
+            setStyle(btnToggleDist, viewMode === 'district');
+            setStyle(btnToggleMuni, viewMode === 'municipality');
+        }
+
+        function getActiveProvinceData() {
+            const r = database.find(d => d.name === regionSelect.value);
+            if (r) return r.provinces.find(p => p.name === provinceSelect.value);
+            return null;
+        }
+
+
+        function populateSelectors() {
+            // Initial Load of Regions
+            const regions = database.map(r => r.name).sort();
+            // Clear existing options except first
+            resetSelect(regionSelect, "Select Region");
+            regionSelect.disabled = false;
+
+            regions.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r;
+                opt.textContent = r;
+                regionSelect.appendChild(opt);
+            });
+        }
+
+
+        // Helper for options with distinct Value vs Text
+        function updateSelectOptionsWithText(select, options, currentValue) {
+            const defaultOption = select.options[0];
+            const defaultClone = defaultOption.cloneNode(true);
+
+            select.innerHTML = '';
+            select.appendChild(defaultClone);
+
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                select.appendChild(el);
+            });
+
+            if (options.some(o => o.value === currentValue)) {
+                select.value = currentValue;
+            } else {
+                select.value = "";
+            }
+        }
+
+
+
+
+        function updateDynamicSelectors() {
+            if (!provinceSelect.value) {
+                divGroup.classList.add('hidden');
+                distGroup.classList.add('hidden');
+                muniGroup.classList.add('hidden');
+                return;
+            }
+
+            // Hide all first
+            divGroup.classList.add('hidden');
+            distGroup.classList.add('hidden');
+            muniGroup.classList.add('hidden');
+
+            const pData = getActiveProvinceData();
+            if (!pData) return;
+
+            if (viewMode === 'division') {
+                divGroup.classList.remove('hidden');
+                const divs = pData.divisions.map(d => d.name).sort();
+                updateSelectOptions(divisionSelect, divs, divisionSelect.value);
+                divisionSelect.disabled = false;
+            } else if (viewMode === 'district') {
+                distGroup.classList.remove('hidden');
+                const dists = pData.districts.map(d => d.name).sort();
+                updateSelectOptions(districtSelect, dists, districtSelect.value);
+                districtSelect.disabled = false;
+            } else if (viewMode === 'municipality') {
+                muniGroup.classList.remove('hidden');
+                const munis = pData.municipalities.map(m => m.name).sort();
+                updateSelectOptions(municipalitySelect, munis, municipalitySelect.value);
+                municipalitySelect.disabled = false;
+            }
+        }
+
+        function updateSelectOptions(select, options, currentValue) {
+            const defaultOption = select.options[0]; // Preserve default "Select X"
+            // Clone default option to avoid reference issues if removed from DOM
+            const defaultClone = defaultOption.cloneNode(true);
+
+            select.innerHTML = '';
+            select.appendChild(defaultClone);
+
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                select.appendChild(el);
+            });
+
+            if (options.includes(currentValue)) {
+                select.value = currentValue;
+            } else {
+                select.value = "";
+            }
+        }
+
+        function updateToggleStyles() {
+            const activeClass = "bg-white text-blue-600 shadow-sm ring-1 ring-black/5";
+            const inactiveClass = "text-slate-500 hover:text-slate-700";
+
+            // Reset base classes
+            const baseClass = "flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all ";
+
+            btnToggleDiv.className = baseClass + inactiveClass;
+            btnToggleDist.className = baseClass + inactiveClass;
+            btnToggleMuni.className = baseClass + inactiveClass;
+
+            if (viewMode === 'division') btnToggleDiv.className = baseClass + activeClass;
+            else if (viewMode === 'district') btnToggleDist.className = baseClass + activeClass;
+            else if (viewMode === 'municipality') btnToggleMuni.className = baseClass + activeClass;
+        }
+
+        function captureState() {
+            return {
+                region: regionSelect.value,
+                province: provinceSelect.value,
+                mode: viewMode,
+                division: divisionSelect.value,
+                district: districtSelect.value,
+                municipality: municipalitySelect.value
+            };
+        }
+
+        function pushState() {
+            if (isNavigating || isProgrammatic) return;
+
+            const currentState = captureState();
+            // Avoid pushing duplicate states (e.g. if no change)
+            if (lastState && JSON.stringify(lastState) === JSON.stringify(currentState)) return;
+
+            if (lastState) {
+                historyStack.push(lastState);
+                if (historyStack.length > 50) historyStack.shift(); // Limit stack size
+            }
+            lastState = currentState;
+            forwardStack = []; // Clear forward stack on new action
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            btnBack.disabled = historyStack.length === 0;
+            btnFwd.disabled = forwardStack.length === 0;
+
+            // Visual feedback
+            btnBack.style.opacity = btnBack.disabled ? "0.5" : "1";
+            btnBack.style.cursor = btnBack.disabled ? "not-allowed" : "pointer";
+            btnFwd.style.opacity = btnFwd.disabled ? "0.5" : "1";
+            btnFwd.style.cursor = btnFwd.disabled ? "not-allowed" : "pointer";
+        }
+
+        async function applyState(state) {
+            isNavigating = true;
+            try {
+                // Restore values
+                regionSelect.value = state.region;
+
+                // Force populate based on region to ensure province options exist
+                populateSelectors(); // This populates Province options logic
+
+                provinceSelect.value = state.province;
+
+                // Set View Mode
+                viewMode = state.mode;
+                updateToggleStyles();
+                updateDynamicSelectors(); // Shows correct group and populates options
+
+                // Restore sub-selectors
+                if (state.mode === 'division' && state.division) {
+                    divisionSelect.value = state.division;
+                } else if (state.mode === 'district' && state.district) {
+                    districtSelect.value = state.district;
+                } else if (state.mode === 'municipality' && state.municipality) {
+                    municipalitySelect.value = state.municipality;
+                }
+
+                // Manually trigger dashboard update based on final state
+                if (state.mode === 'division' && state.division) {
+                    divisionSelect.dispatchEvent(new Event('input'));
+                } else if (state.mode === 'district' && state.district) {
+                    districtSelect.dispatchEvent(new Event('input'));
+                } else if (state.mode === 'municipality' && state.municipality) {
+                    municipalitySelect.dispatchEvent(new Event('input'));
+                } else if (state.province) {
+                    provinceSelect.dispatchEvent(new Event('input'));
+                } else if (state.region) {
+                    regionSelect.dispatchEvent(new Event('input'));
+                } else {
+                    // Empty state
+                    regionSelect.dispatchEvent(new Event('input'));
+                }
+
+                lastState = state;
+                updateNavButtons();
+            } finally {
+                // Small delay to ensure all triggered events complete
+                setTimeout(() => { isNavigating = false; }, 100);
+            }
+        }
+
+        btnBack.addEventListener('click', () => {
+            if (historyStack.length === 0) return;
+
+            // Capture clear current state to forward stack before going back? 
+            // Actually, lastState IS the current state effectively.
+            // We push lastState to forwardStack
+            if (lastState) forwardStack.push(lastState);
+
+            const prevState = historyStack.pop();
+            applyState(prevState);
+        });
+
+        btnFwd.addEventListener('click', () => {
+            if (forwardStack.length === 0) return;
+
+            if (lastState) historyStack.push(lastState);
+
+            const nextState = forwardStack.pop();
+            applyState(nextState);
+        });
+
+        // Initialize lastState on load
+        setTimeout(() => { lastState = captureState(); updateNavButtons(); }, 100);
+
+        // Legacy code removed. 
+        // Initialization
+        populateSelectors();
+
+        // Initial dashboard state: LOAD NATIONAL
+        updateDashboard('national');
+
+        resetBtn.addEventListener('click', () => {
+            // Resetting region triggers change event which now defaults to National
+            regionSelect.value = "";
+            regionSelect.dispatchEvent(new Event('input'));
+        });
+
+        function showWelcome() {
+            welcomeState.classList.remove('hidden');
+            dashboardContent.classList.add('hidden');
+        }
+
+        // Removed legacy selectDistrict
+
+        function updateDashboard(level, data, parentDivision = null) {
+            welcomeState.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+
+            // Default: determine context from selectors if level/data not explicit (or if we need context parents)
+            const regionName = regionSelect.value;
+            const provName = provinceSelect.value;
+
+            if (!regionName) {
+                // Do not return early. Allow fallback to National.
+                // welcomeState.classList.remove('hidden');
+                // dashboardContent.classList.add('hidden');
+                // return;
+            }
+
+            // Find context objects
+            const regionObj = database.find(r => r.name === regionName);
+            let provObj = null;
+            if (provName && regionObj) {
+                provObj = regionObj.provinces.find(p => p.name === provName);
+            }
+
+            // Determine final display level/data if not provided or if we're just refreshing
+            // However, the caller usually provides the specific target (e.g. `div` object).
+            // But we need to be careful: `data` passed might be a sub-object.
+
+            let displayLevel = level;
+            let displayData = data;
+
+            // Fallback logic if called without args (e.g. generic refresh)
+            if (!displayData) {
+                if (provObj) {
+                    displayLevel = 'province';
+                    displayData = provObj;
+                } else if (regionObj) {
+                    displayLevel = 'region';
+                    displayData = regionObj;
+                } else {
+                    // No Region Selected -> National
+                    displayLevel = 'national';
+                    displayData = {}; // Must be truthy for showBreakdown to work
+                }
+            }
+
+            // Set Globals
+            currentLevel = displayLevel;
+            currentData = displayData;
+
+            // Setup display variables
+            let name = "";
+            let sub = "";
+            let badge = "";
+            let governor = provObj ? provObj.governor : (displayLevel === 'province' ? displayData.governor : null);
+
+
+
+            let mayor = null;
+            let congressmen = [];
+
+            // Helper to add congressman (deduplicated)
+            let seenCong = new Set();
+            function addCong(name, location, label = "District Representative") {
+                const key = `${name}-${location}`;
+                if (name && !seenCong.has(key)) {
+                    seenCong.add(key);
+                    congressmen.push({ name, location, label });
+                }
+            }
+
+            // --- Level Specific Logic ---
+
+            if (displayLevel === 'national') {
+                const natData = getNationalData();
+                name = "National Summary";
+                sub = "Department of Education - System Wide";
+                badge = "NATIONAL";
+                currentLocationName = "National";
+                governor = null; // Explicitly clear governor for national view
+                mayor = null;
+
+
+
+            } else if (displayLevel === 'region') {
+                name = regionObj.name;
+                sub = "Regional Profile";
+                badge = "REGION";
+                currentLocationName = name;
+
+            } else if (displayLevel === 'province') {
+                name = provObj.name;
+                sub = "Provincial Profile";
+                badge = "PROVINCE";
+                currentLocationName = name;
+                governor = provObj.governor;
+
+            } else if (displayLevel === 'division') {
+                // data is division object (summary)
+                // It DOES NOT have child arrays attached typically.
+                name = displayData.name + " Division";
+                sub = "Division Profile";
+                badge = "DIVISION";
+                currentLocationName = name;
+
+                // Find Congressmen via Province Municipalities
+                if (provObj && provObj.municipalities) {
+                    const divMunis = provObj.municipalities.filter(m => m.division === displayData.name);
+                    divMunis.forEach(m => {
+                        if (m.congressman) addCong(m.congressman, m.district);
+                    });
+                }
+
+            } else if (displayLevel === 'district') {
+                name = displayData.name;
+                sub = "District Profile";
+                badge = "DISTRICT";
+                currentLocationName = name;
+
+                // Find Congressman
+                if (provObj && provObj.municipalities) {
+                    const distMunis = provObj.municipalities.filter(m => m.district === displayData.name);
+                    if (distMunis.length > 0 && distMunis[0].congressman) {
+                        addCong(distMunis[0].congressman, displayData.name);
+                    }
+                }
+
+            } else if (displayLevel === 'municipality') {
+                name = displayData.name;
+                sub = "Municipality Profile";
+                badge = "MUNICIPALITY";
+                currentLocationName = name;
+
+                mayor = displayData.mayor;
+
+                // Congressman from this specific muni object
+                if (displayData.congressman) {
+                    addCong(displayData.congressman, displayData.district || "District Representative");
+                }
+            }
+
+            // --- Final Data Cleanup / Overrides ---
+
+            // NCR/Metro Manila Hack: No Provincial Governors
+            const isNCR = regionObj && (regionObj.name === 'National Capital Region' || regionObj.name === 'NCR');
+            const isMetroManila = (provObj && provObj.name.includes('Metro Manila')) || (name && name.includes('Metro Manila'));
+
+            if (isNCR || isMetroManila) {
+                governor = null;
+            }
+
+            // Regex for "Hon." followed by dash/hyphen variants, handling whitespace
+            if (governor && /^Hon\.?\s*[\-—–]\s*$/i.test(governor.trim())) {
+                governor = null;
+            }
+
+            // Update Headers
+            mainTitle.textContent = name;
+            subTitle.textContent = sub;
+            locationBadge.textContent = badge;
+
+            // Update Stats
+            let stats = {
+                schools: 0, enrolment: 0, totalClassrooms: 0, classroomReq: 0, classroomShortage: 0,
+                construction: 0, minorRepairs: 0, majorRepairs: 0,
+                ncTarget: 0, ncCompleted: 0, ncRemaining: 0, ncLapsed: 0,
+                ncTarget24: 0, ncCompleted24: 0, ncRemaining24: 0, ncLapsed24: 0,
+                ncTarget23: 0, ncCompleted23: 0, ncRemaining23: 0, ncLapsed23: 0,
+                lossTotal: 0, lossFire: 0, lossEarthquake: 0, lossTyphoon: 0, lossRepaired: 0,
+                lossTotalPrior: 0, lossFirePrior: 0, lossEarthquakePrior: 0, lossTyphoonPrior: 0, lossRepairedPrior: 0,
+                qrfTotal24: 0, qrfMajor24: 0, qrfMinor24: 0,
+                qrfTotal19_23: 0, qrfMajor19_23: 0, qrfMinor19_23: 0,
+                // New Stats
+                noSites: 0, noStoreys: 0, noCLs: 0,
+                siteOwnership: 0, buildableSpace: 0, geotechReport: 0,
+                lms: 0,
+                singleStorey: 0, multiStorey: 0,
+                siteReadiness: 0
+            };
+
+            if (displayLevel === 'national') {
+                database.forEach(r => {
+                    r.provinces.forEach(p => accumulateStats(stats, p.stats));
+                });
+            } else if (displayLevel === 'region') {
+                regionObj.provinces.forEach(p => accumulateStats(stats, p.stats));
+            } else if (displayLevel === 'province') {
+                stats = provObj.stats; // Province stats are usually typically full in the DB
+            } else {
+                // For Div/Dist/Muni, we calculate on the fly to ensure we get ALL metrics,
+                // because the pre-calc stats might only have schools/enrolment.
+
+                if (provObj && provObj.municipalities) {
+                    let relevantMunis = [];
+
+                    if (displayLevel === 'division') {
+                        // Strict Hierarchy Check requested by User
+                        // Use selector value as source of truth
+                        const targetName = divisionSelect.value || displayData.name;
+
+                        // Normalizer helper: remove "city", "division", "of", and non-alphanumeric
+                        const normalize = (s) => (s || "").toLowerCase().replace(/city|division|of|\W/g, '');
+                        const targetNorm = normalize(targetName);
+
+                        relevantMunis = provObj.municipalities.filter(m => {
+                            const divNorm = normalize(m.division);
+                            const muniNorm = normalize(m.name);
+
+                            // 1. Check Division Name (Primary)
+                            if (divNorm === targetNorm) return true;
+
+                            // 2. Check Municipality Name (Fallback for City Divisions)
+                            // Often for Cities, Division = Municipality.
+                            if (muniNorm === targetNorm) return true;
+
+                            // 3. Containment Fallback (Safety)
+                            if (targetNorm.length > 3 && divNorm.length > 3) {
+                                if (divNorm.includes(targetNorm) || targetNorm.includes(divNorm)) return true;
+                            }
+
+                            return false;
+                        });
+                    } else if (displayLevel === 'district') {
+                        relevantMunis = provObj.municipalities.filter(m => m.district === displayData.name);
+                    } else if (displayLevel === 'municipality') {
+                        relevantMunis = [displayData];
+                    }
+
+                    relevantMunis.forEach(m => accumulateStats(stats, m));
+                }
+            }
+
+            schoolCount.textContent = (stats.schools || 0).toLocaleString();
+            enrolmentCount.textContent = (stats.enrolment || 0).toLocaleString();
+            totalClassrooms.textContent = (stats.totalClassrooms || 0).toLocaleString();
+            classroomReq.textContent = (stats.classroomReq || 0).toLocaleString();
+            classroomShortage.textContent = (stats.classroomShortage || 0).toLocaleString();
+            newConTarget.textContent = (stats.ncTarget || 0).toLocaleString();
+            majorRepairs.textContent = (stats.majorRepairs || 0).toLocaleString();
+            minorRepairs.textContent = (stats.minorRepairs || 0).toLocaleString();
+
+            // QRF Total
+            const qrfTotal = (stats.qrfTotal24 || 0) + (stats.qrfTotal19_23 || 0);
+            totalBuildingLossUnified.textContent = qrfTotal.toLocaleString();
+
+            // Update New Stats Cards (Future Projects & Land Management)
+            noSites.textContent = (stats.noSites || 0).toLocaleString();
+            singleStorey.textContent = (stats.singleStorey || 0).toLocaleString();
+            multiStorey.textContent = (stats.multiStorey || 0).toLocaleString();
+            noCLs.textContent = (stats.noCLs || 0).toLocaleString();
+            siteOwnership.textContent = (stats.siteOwnership || 0).toLocaleString();
+            buildableSpace.textContent = (stats.buildableSpace || 0).toLocaleString();
+            geotechReport.textContent = (stats.geotechReport || 0).toLocaleString();
+            siteReadiness.textContent = (stats.siteReadiness || 0).toLocaleString();
+            lms.textContent = (stats.lms || 0).toLocaleString();
+
+            // Render Leadership
+            leadershipContent.innerHTML = "";
+            leadershipContent.className = "flex flex-col gap-6";
+
+            // 1. Top Row (Gov/Mayor)
+            const topRow = document.createElement('div');
+            topRow.className = "grid grid-cols-1 md:grid-cols-2 gap-4 w-full"; // Auto sizing
+
+            if (governor) {
+                const card = document.createElement('div');
+                card.className = "col-span-1 text-center bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center justify-center gap-2";
+                card.innerHTML = `<p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide">Provincial Governor</p><p class="font-bold text-slate-800 text-xl leading-tight">${governor}</p>`;
+                topRow.appendChild(card);
+            }
+            if (mayor) {
+                const card = document.createElement('div');
+                card.className = "col-span-1 text-center bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-col items-center justify-center gap-2";
+                card.innerHTML = `<p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">Municipal Mayor</p><p class="font-bold text-slate-800 text-xl leading-tight">${mayor}</p>`;
+                topRow.appendChild(card);
+            }
+            if (displayLevel === 'national') {
+                // Optional: Show Secretary or generic
+                const card = document.createElement('div');
+                card.className = "col-span-1 md:col-span-2 text-center bg-blue-50 p-6 rounded-2xl border border-blue-100 flex flex-col items-center justify-center gap-2";
+                card.innerHTML = `<p class="text-[10px] font-bold text-blue-500 uppercase tracking-wide">Department Secretary</p><p class="font-bold text-slate-800 text-xl leading-tight">Sec. Sonny Angara</p>`;
+                topRow.appendChild(card);
+            }
+
+            if (displayLevel === 'region' && regionObj && regionObj.name !== 'National Capital Region' && regionObj.name !== 'NCR') {
+                // Show Provincial Governors
+                regionObj.provinces.forEach(p => {
+                    if (p.governor) {
+                        const card = document.createElement('div');
+                        card.className = "col-span-1 text-center bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-indigo-100 transition-colors group";
+                        card.innerHTML = `
+                            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide group-hover:text-indigo-600">Provincial Governor</p>
+                            <p class="font-bold text-slate-800 text-xl leading-tight">${p.governor}</p>
+                            <p class="text-xs text-slate-500 group-hover:text-slate-700">${p.name}</p>
+                        `;
+                        card.onclick = () => {
+                            provinceSelect.value = p.name;
+                            provinceSelect.dispatchEvent(new Event('input'));
+                        };
+                        topRow.appendChild(card);
+                    }
+                });
+            }
+            if (topRow.firstChild) leadershipContent.appendChild(topRow);
+
+            // 2. Congressmen
+            if (congressmen.length > 0) {
+                const botRow = document.createElement('div');
+                botRow.className = "grid grid-cols-1 md:grid-cols-2 gap-4 w-full";
+                congressmen.forEach(c => {
+                    const card = document.createElement('div');
+                    card.className = "col-span-1 text-center bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center gap-2";
+                    card.innerHTML = `<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">${c.label}</p><p class="font-bold text-slate-800 text-xl leading-tight">${c.name}</p><p class="text-xs text-slate-500">${c.location}</p>`;
+                    botRow.appendChild(card);
+                });
+                leadershipContent.appendChild(botRow);
+            }
+
+            // 3. Breakdown Grid (Only show for Region/Province level view?)
+            // If user clicked a specific Division, maybe we show Breakdown of Districts within it?
+            // User didn't explicit ask for deep drill down GRIDS, just stats/leadership.
+            // But maintaining the grid is nice.
+
+            if (displayLevel === 'region') renderRegionBreakdown(displayData);
+            else if (displayLevel === 'province') renderBreakdownGrid(displayData);
+
+            // If Division/District/Muni, we COULD show School List? Or just hide grid.
+            // For now let's hide grid to focus on the specific stats/leadership requested.
+        }
+
+        function accumulateStats(target, source) {
+            target.schools += (source.schools || 0);
+            target.enrolment += (source.enrolment || 0);
+            target.totalClassrooms += (source.totalClassrooms || 0);
+            target.classroomReq += (source.classroomReq || 0);
+            target.classroomShortage += (source.classroomShortage || 0);
+            target.construction += (source.construction || 0);
+            target.minorRepairs += (source.minorRepairs || 0);
+            target.majorRepairs += (source.majorRepairs || 0);
+
+            // NC Targets
+            target.ncTarget += (source.ncTarget || 0);
+            target.ncCompleted += (source.ncCompleted || 0);
+            target.ncRemaining += (source.ncRemaining || 0);
+            target.ncLapsed += (source.ncLapsed || 0);
+            target.ncTarget24 += (source.ncTarget24 || 0);
+            target.ncCompleted24 += (source.ncCompleted24 || 0);
+            target.ncRemaining24 += (source.ncRemaining24 || 0);
+            target.ncLapsed24 += (source.ncLapsed24 || 0);
+            target.ncTarget23 += (source.ncTarget23 || 0);
+            target.ncCompleted23 += (source.ncCompleted23 || 0);
+            target.ncRemaining23 += (source.ncRemaining23 || 0);
+            target.ncLapsed23 += (source.ncLapsed23 || 0);
+
+            // Loss / Disaster
+            target.lossTotal += (source.lossTotal || 0);
+            target.lossFire += (source.lossFire || 0);
+            target.lossEarthquake += (source.lossEarthquake || 0);
+            target.lossTyphoon += (source.lossTyphoon || 0);
+            target.lossRepaired += (source.lossRepaired || 0);
+
+            target.lossTotalPrior += (source.lossTotalPrior || 0);
+            target.lossFirePrior += (source.lossFirePrior || 0);
+            target.lossEarthquakePrior += (source.lossEarthquakePrior || 0);
+            target.lossTyphoonPrior += (source.lossTyphoonPrior || 0);
+            target.lossRepairedPrior += (source.lossRepairedPrior || 0);
+
+            // QRF
+            target.qrfTotal24 += (source.qrfTotal24 || 0);
+            target.qrfMajor24 += (source.qrfMajor24 || 0);
+            target.qrfMinor24 += (source.qrfMinor24 || 0);
+            target.qrfTotal19_23 += (source.qrfTotal19_23 || 0);
+            target.qrfMajor19_23 += (source.qrfMajor19_23 || 0);
+            target.qrfMinor19_23 += (source.qrfMinor19_23 || 0);
+
+            // New Stats (Future Projects & Land Management)
+
+            target.noSites += (source.noSites || 0);
+            target.noStoreys += (source.noStoreys || 0);
+            target.noCLs += (source.noCLs || 0);
+            target.siteOwnership += (source.siteOwnership || 0);
+            target.buildableSpace += (source.buildableSpace || 0);
+            target.geotechReport += (source.geotechReport || 0);
+            target.lms += (source.lms || 0);
+
+            target.singleStorey += (source.singleStorey || 0);
+            target.multiStorey += (source.multiStorey || 0);
+            target.siteReadiness += (source.siteReadiness || 0);
+        }
+
+        function renderBreakdownGrid(provData) {
+            let items = [];
+            let typeLabel = "Division";
+
+            if (viewMode === 'division') {
+                items = provData.divisions;
+                typeLabel = "Division";
+            } else if (viewMode === 'district') {
+                items = provData.districts;
+                typeLabel = "District";
+            } else {
+                items = provData.municipalities;
+                typeLabel = "Municipality";
+            }
+
+            const listContainer = document.createElement('div');
+            listContainer.className = "w-full";
+
+            const header = document.createElement('div');
+            header.className = "flex items-center justify-between mb-4";
+            header.innerHTML = `<h3 class="text-sm font-bold text-slate-700">${items.length} ${typeLabel}s</h3>`;
+            listContainer.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
+
+            items.forEach(item => {
+                if (!item.name) return;
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-1 hover:border-blue-500 hover:ring-1 hover:ring-blue-500 hover:shadow-md cursor-pointer transition-all group";
+
+                let s = item.stats || item;
+                // For Municipality in direct view, `item` itself has the stats properties if `parse_data` attached them,
+                // OR `item` is a municpality object. `accumulateStats` logic earlier handled missing stats.
+                // We display 0 if missing.
+
+                const schools = s.schools || 0;
+                const enrol = s.enrolment || 0;
+
+                let subtext = `<span class="font-semibold text-slate-700">${schools.toLocaleString()}</span> Schools<br><span class="font-semibold text-slate-700">${enrol.toLocaleString()}</span> Students`;
+
+                if (viewMode === 'municipality' && item.mayor) {
+                    subtext += `<br><span class="text-emerald-600 font-medium text-xs mt-1 block">Mayor: ${item.mayor}</span>`;
+                }
+
+                // Add Click Handler
+                card.onclick = () => {
+                    if (viewMode === 'division') {
+                        divisionSelect.value = item.name;
+                        divisionSelect.dispatchEvent(new Event('input'));
+                    } else if (viewMode === 'district') {
+                        districtSelect.value = item.name;
+                        districtSelect.dispatchEvent(new Event('input'));
+                    } else if (viewMode === 'municipality') {
+                        municipalitySelect.value = item.name;
+                        municipalitySelect.dispatchEvent(new Event('input'));
+                    }
+                    // Scroll to top to see changes?
+                    document.getElementById('dashboard-content').scrollIntoView({ behavior: 'smooth' });
+                };
+
+                card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <p class="font-bold text-slate-800 text-sm mb-1 group-hover:text-blue-600 transition-colors">${item.name}</p>
+                    <i data-lucide="arrow-right-circle" class="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100"></i>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">${subtext}</p>
+                `;
+                grid.appendChild(card);
+            });
+
+            listContainer.appendChild(grid);
+            leadershipContent.appendChild(listContainer);
+
+            // Re-run lucide for new icons
+            lucide.createIcons();
+        }
+
+        function renderRegionBreakdown(regData) {
+            const listContainer = document.createElement('div');
+            listContainer.className = "w-full";
+
+            const header = document.createElement('div');
+            header.className = "flex items-center justify-between mb-4";
+            header.innerHTML = `<h3 class="text-sm font-bold text-slate-700">Provinces</h3>`;
+            listContainer.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 gap-4";
+
+            regData.provinces.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-500 cursor-pointer transition-all group";
+                card.innerHTML = `
+                <div class="h-full flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-3 group-hover:text-blue-600 transition-colors">${p.name}</h4>
+                        <div class="space-y-1">
+                            <p class="text-xs text-slate-500 font-medium"><b class="text-slate-800 text-sm mr-1">${(p.stats.schools || 0).toLocaleString()}</b> Schools</p>
+                            <p class="text-xs text-slate-500 font-medium"><b class="text-slate-800 text-sm mr-1">${(p.stats.enrolment || 0).toLocaleString()}</b> Students</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                card.onclick = () => {
+                    provinceSelect.value = p.name;
+                    provinceSelect.dispatchEvent(new Event('input'));
+                };
+                grid.appendChild(card);
+            });
+            listContainer.appendChild(grid);
+            leadershipContent.appendChild(listContainer);
+
+            // Re-run lucide for icons in dynamic content
+            lucide.createIcons();
+        }
+
+
+
+        function showBreakdown(metric) {
+            try {
+                if (!currentData || !currentLevel) return;
+
+                const metricTitles = {
+                    'schools': 'Total Schools Breakdown',
+                    'enrolment': 'Enrolment Breakdown',
+                    'totalClassrooms': 'Total Instructional Rooms Breakdown',
+                    'classroomReq': 'Classroom Requirement Breakdown',
+                    'classroomShortage': 'Classroom Shortage Breakdown',
+                    'construction': 'Ongoing Construction Projects',
+                    'majorRepairs': 'Major Repairs Breakdown',
+                    'minorRepairs': 'Minor Repairs Breakdown',
+                    'ncTarget': 'New Construction 2025 Targets',
+                    'ncCompleted': 'New Construction 2025 - Completed',
+                    'ncRemaining': 'New Construction 2025 - Remaining',
+                    'ncLapsed': 'New Construction 2025 - Lapsed',
+                    'ncCompleted24': 'New Construction 2024 - Completed',
+                    'ncRemaining24': 'New Construction 2024 - Remaining',
+                    'ncLapsed24': 'New Construction 2024 - Lapsed',
+                    'ncCompleted23': 'New Construction 2023 - Completed',
+                    'ncRemaining23': 'New Construction 2023 - Remaining',
+                    'ncLapsed23': 'New Construction 2023 - Lapsed',
+                    'qrfTotal24': 'QRF Total Damaged 2024 Onwards',
+                    'qrfMajor24': 'QRF Major Damaged 2024 Onwards',
+                    'qrfMinor24': 'QRF Minor Damaged 2024 Onwards',
+                    'qrfTotal19_23': 'QRF Total Damaged 2019-2023',
+                    'qrfMajor19_23': 'QRF Major Damaged 2019-2023',
+                    'qrfTotal19_23': 'QRF Total Damaged 2019-2023',
+                    'qrfMajor19_23': 'QRF Major Damaged 2019-2023',
+                    'qrfMinor19_23': 'QRF Minor Damaged 2019-2023',
+                    // New Metrics
+                    'lms': 'LMS Breakdown'
+                };
+
+                const title = metricTitles[metric] || 'Details';
+
+                if (metric === 'ncTarget') {
+                    modalTitle.textContent = title;
+                    modalSubtitle.textContent = `Status Overview for ${currentLocationName}`;
+
+                    // Hide table, show card grid
+                    const tableContainer = document.querySelector('#modal-panel table');
+                    if (tableContainer) tableContainer.parentElement.style.display = 'none';
+
+                    let gridContainer = document.getElementById('nc-breakdown-grid');
+                    if (!gridContainer) {
+                        gridContainer = document.createElement('div');
+                        gridContainer.id = 'nc-breakdown-grid';
+                        gridContainer.className = "flex flex-col gap-8 mt-4";
+                        document.getElementById('modal-body-content').appendChild(gridContainer);
+                    }
+                    gridContainer.innerHTML = '';
+                    gridContainer.style.display = 'flex';
+
+                    const getSum = (m) => {
+                        const { total } = generateBreakdownData(m, true);
+                        return total;
+                    };
+
+                    const years = [
+                        { year: '2025', suffix: '' },
+                        { year: '2024', suffix: '24' },
+                        { year: '2023', suffix: '23' }
+                    ];
+
+                    let grandTotalDisplay = 0;
+
+                    years.forEach(y => {
+                        const comp = getSum(`ncCompleted${y.suffix}`);
+                        const rem = getSum(`ncRemaining${y.suffix}`);
+                        const lapsed = getSum(`ncLapsed${y.suffix}`);
+
+                        if (y.year === '2025') grandTotalDisplay = comp + rem + lapsed;
+
+                        const section = document.createElement('div');
+                        section.innerHTML = `<h4 class="text-lg font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">New Construction ${y.year} Projects</h4>`;
+
+                        const grid = document.createElement('div');
+                        grid.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
+
+                        const cards = [
+                            { id: `ncCompleted${y.suffix}`, title: `Completed ${y.year}`, val: comp, color: 'emerald', icon: 'check-circle' },
+                            { id: `ncRemaining${y.suffix}`, title: `Remaining ${y.year}`, val: rem, color: 'amber', icon: 'clock' },
+                            { id: `ncLapsed${y.suffix}`, title: `Lapsed ${y.year}`, val: lapsed, color: 'rose', icon: 'alert-circle' }
+                        ];
+
+                        cards.forEach(c => {
+                            const card = document.createElement('div');
+                            card.className = `bg-${c.color}-50 p-6 rounded-2xl border border-${c.color}-100 hover:shadow-lg hover:border-${c.color}-300 cursor-pointer transition-all flex flex-col items-center justify-center gap-3`;
+                            card.onclick = () => showBreakdown(c.id);
+                            card.innerHTML = `
+                            <div class="p-3 bg-${c.color}-100 text-${c.color}-600 rounded-full">
+                                <i data-lucide="${c.icon}" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="text-3xl font-bold text-slate-800">${c.val.toLocaleString()}</h4>
+                            <p class="text-sm font-bold text-${c.color}-600 uppercase tracking-wider">${c.title}</p>
+                        `;
+                            grid.appendChild(card);
+                        });
+
+                        section.appendChild(grid);
+                        gridContainer.appendChild(section);
+                    });
+
+
+
+                    document.getElementById('modal-total-display').textContent = getSum('ncTarget').toLocaleString();
+                    document.getElementById('modal-metric-header').classList.add('hidden');
+
+                    modal.classList.remove('hidden');
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        modalBackdrop.classList.remove('opacity-0');
+                        modalPanel.classList.remove('opacity-0', 'scale-95');
+                        modalPanel.classList.add('opacity-100', 'scale-100');
+                    }, 10);
+                    return;
+                }
+
+                if (metric === 'lossUnified') {
+                    modalTitle.textContent = "QRF Total Damaged CL Breakdown";
+                    modalSubtitle.textContent = `Detailed QRF status for ${currentLocationName}`;
+
+                    const tableContainer = document.querySelector('#modal-panel table');
+                    if (tableContainer) tableContainer.parentElement.style.display = 'none';
+
+                    let gridContainer = document.getElementById('nc-breakdown-grid');
+                    if (!gridContainer) {
+                        gridContainer = document.createElement('div');
+                        gridContainer.id = 'nc-breakdown-grid';
+                        gridContainer.className = "flex flex-col gap-8 mt-4";
+                        document.getElementById('modal-body-content').appendChild(gridContainer);
+                    }
+                    gridContainer.innerHTML = '';
+                    gridContainer.style.display = 'flex';
+                    gridContainer.className = "flex flex-col gap-8 mt-4";
+
+                    const getSum = (m) => {
+                        const { total } = generateBreakdownData(m, true);
+                        return total;
+                    };
+
+                    const groups = [
+                        {
+                            title: "2024 Onwards",
+                            totalKey: 'qrfTotal24',
+                            majorKey: 'qrfMajor24',
+                            minorKey: 'qrfMinor24'
+                        },
+                        {
+                            title: "2019 to 2023",
+                            totalKey: 'qrfTotal19_23',
+                            majorKey: 'qrfMajor19_23',
+                            minorKey: 'qrfMinor19_23'
+                        }
+                    ];
+
+                    groups.forEach(g => {
+                        const totalVal = getSum(g.totalKey);
+
+                        const section = document.createElement('div');
+                        section.innerHTML = `<h4 class="text-lg font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2">${g.title}</h4>`;
+
+                        const grid = document.createElement('div');
+                        grid.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
+
+                        // Total
+                        const cardTotal = document.createElement('div');
+                        cardTotal.className = "bg-orange-50 p-6 rounded-2xl border border-orange-100 hover:shadow-lg transition-all flex flex-col items-center justify-center gap-3";
+                        cardTotal.innerHTML = `
+                         <div class="p-3 bg-orange-100 text-orange-600 rounded-full"><i data-lucide="alert-octagon" class="w-8 h-8"></i></div>
+                         <h4 class="text-3xl font-bold text-slate-800">${totalVal.toLocaleString()}</h4>
+                         <p class="text-sm font-bold text-orange-600 uppercase tracking-wider">Total Damaged</p>
+                    `;
+                        cardTotal.onclick = () => showBreakdown(g.totalKey);
+                        grid.appendChild(cardTotal);
+
+                        // Major
+                        const majorVal = getSum(g.majorKey);
+                        const cardMajor = document.createElement('div');
+                        cardMajor.className = "bg-red-50 p-6 rounded-2xl border border-red-100 hover:shadow-lg transition-all flex flex-col items-center justify-center gap-3";
+                        cardMajor.innerHTML = `
+                          <div class="p-3 bg-red-100 text-red-600 rounded-full"><i data-lucide="alert-triangle" class="w-8 h-8"></i></div>
+                          <h4 class="text-3xl font-bold text-slate-800">${majorVal.toLocaleString()}</h4>
+                          <p class="text-sm font-bold text-red-600 uppercase tracking-wider">Major Damaged</p>
+                     `;
+                        cardMajor.onclick = () => showBreakdown(g.majorKey);
+                        grid.appendChild(cardMajor);
+
+                        // Minor
+                        const minorVal = getSum(g.minorKey);
+                        const cardMinor = document.createElement('div');
+                        cardMinor.className = "bg-amber-50 p-6 rounded-2xl border border-amber-100 hover:shadow-lg transition-all flex flex-col items-center justify-center gap-3";
+                        cardMinor.innerHTML = `
+                          <div class="p-3 bg-amber-100 text-amber-600 rounded-full"><i data-lucide="hammer" class="w-8 h-8"></i></div>
+                          <h4 class="text-3xl font-bold text-slate-800">${minorVal.toLocaleString()}</h4>
+                          <p class="text-sm font-bold text-amber-600 uppercase tracking-wider">Minor Damaged</p>
+                      `;
+                        cardMinor.onclick = () => showBreakdown(g.minorKey);
+                        grid.appendChild(cardMinor);
+
+                        section.appendChild(grid);
+                        gridContainer.appendChild(section);
+                    });
+
+
+
+                    document.getElementById('modal-total-display').textContent = (getSum('qrfTotal24') + getSum('qrfTotal19_23')).toLocaleString();
+                    document.getElementById('modal-metric-header').classList.add('hidden');
+
+                    modal.classList.remove('hidden');
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        modalBackdrop.classList.remove('opacity-0');
+                        modalPanel.classList.remove('opacity-0', 'scale-95');
+                        modalPanel.classList.add('opacity-100', 'scale-100');
+                    }, 10);
+                    return;
+                }
+                // Cleanup from custom views if going back to standard table
+                const ncGrid = document.getElementById('nc-breakdown-grid');
+                if (ncGrid) ncGrid.style.display = 'none';
+                const natGrid = document.getElementById('national-breakdown-table-wrapper');
+                if (natGrid) natGrid.style.display = 'none';
+
+                // Show table
+                const tableC = document.querySelector('#modal-panel table');
+                if (tableC) tableC.parentElement.style.display = 'block';
+
+
+
+                if (currentLevel === 'national') {
+                    showNationalBreakdownModal(metric, title);
+                    return;
+                } else if (currentLevel === 'region') {
+                    showRegionBreakdownModal(metric, title);
+                    return;
+                }
+
+                modalTitle.textContent = title;
+                modalSubtitle.textContent = `Showing details for ${currentLocationName}`;
+
+                const { html, total } = generateBreakdownData(metric);
+                modalTableBody.innerHTML = html;
+                document.getElementById('modal-total-display').textContent = total.toLocaleString();
+
+                const headerCount = document.getElementById('modal-metric-header');
+                if (metric === 'schools') {
+                    headerCount.classList.add('hidden');
+                } else {
+                    headerCount.classList.remove('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modalBackdrop.classList.remove('opacity-0');
+                    modalPanel.classList.remove('opacity-0', 'scale-95');
+                    modalPanel.classList.add('opacity-100', 'scale-100');
+                }, 10);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error showing breakdown: " + e.message);
+            }
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.add('opacity-0');
+            modalPanel.classList.remove('opacity-100', 'scale-100');
+            modalPanel.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        modalBackdrop.addEventListener('click', closeModal);
+
+        function generateBreakdownData(metric, onlyTotal = false) {
+            let munis = [];
+
+            if (currentLevel === 'region') {
+                // Region -> Provinces -> Munis
+                currentData.provinces.forEach(p => p.municipalities.forEach(m => munis.push(m)));
+            } else if (currentLevel === 'national') {
+                // National -> All Regions -> All Provinces -> Munis
+                database.forEach(r => {
+                    (r.provinces || []).forEach(p => {
+                        (p.municipalities || []).forEach(m => munis.push(m));
+                    });
+                });
+            } else if (currentLevel === 'province') {
+                munis = currentData.municipalities;
+            } else {
+                // For Div/Dist/Muni, we need to find the context from the global selectors/database if currentData doesn't represent the full context.
+                // Or simply re-fetch based on selectors which is safer.
+
+                const regionName = regionSelect.value;
+                const provName = provinceSelect.value;
+                const r = database.find(x => x.name === regionName);
+                if (r) {
+                    const p = r.provinces.find(x => x.name === provName);
+                    if (p && p.municipalities) {
+                        if (currentLevel === 'division') {
+                            munis = p.municipalities.filter(m => m.division === currentData.name); // currentData is division obj
+                        } else if (currentLevel === 'district') {
+                            munis = p.municipalities.filter(m => m.district === currentData.name); // currentData is district obj
+                        } else if (currentLevel === 'municipality') {
+                            munis = [currentData]; // currentData IS the muni obj
+                        }
+                    }
+                }
+            }
+
+            // Note: Division/District/Muni levels are no longer "Views" in the main Dashboard logic
+            // They are just filters in the breakdown grid.
+            // UNLESS we add drill-down clicking to the grid cards?
+            // The user didn't explicitly ask for full drill down, just "Toggles".
+            // So if I click "Division", I see Division breakdown.
+            // The Modal Breakdown is for METRICS (Schools, Enrolment).
+            // So logic should aggregate ALL schools in the current view (Region or Province).
+
+            // So if I am in Province View, and I click "Total Schools", I expect to see schools in that Province.
+            // Logic above (currentData.municipalities) handles this correctly.
+
+            // Return logic
+            let html = '';
+            let total = 0;
+            let allSchools = [];
+
+            munis.forEach(muni => {
+                const schoolList = muni.schoolList || [];
+                schoolList.forEach(school => {
+                    let val = 0;
+                    if (metric === 'schools') val = 1;
+                    else val = school[metric] || 0;
+
+                    if (val > 0) {
+                        total += val;
+                        if (!onlyTotal) {
+                            allSchools.push({
+                                ...school,
+                                muniName: muni.name,
+                                displayVal: val
+                            });
+                        }
+                    }
+                });
+            });
+
+            if (onlyTotal) return { html: '', total };
+
+            // Sort
+            if (metric === 'schools') {
+                allSchools.sort((a, b) => a.name.localeCompare(b.name));
+            } else {
+                // Sort descending by value
+                allSchools.sort((a, b) => b.displayVal - a.displayVal);
+            }
+
+            // Optional: limit to top 1000 to prevent browser lag if list is huge
+            const limit = 1000;
+            const displaySchools = allSchools.slice(0, limit);
+
+            displaySchools.forEach((school, index) => {
+                html += `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-400">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-500">${school.id || 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800">${school.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${school.muniName}</td>
+                    ${metric === 'schools' ? '' : `<td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-blue-600">${school.displayVal.toLocaleString()}</td>`}
+                </tr>
+            `;
+            });
+
+            if (allSchools.length > limit) {
+                html += `
+                <tr class="bg-slate-50/50">
+                    <td class="px-6 py-2"></td>
+                    <td class="px-6 py-2 text-xs text-slate-500 italic" colspan="2">+ ${allSchools.length - limit} more schools...</td>
+                    <td class="px-6 py-2 text-right text-xs font-bold text-slate-400">...</td>
+                </tr>
+            `;
+            }
+
+            if (html === '') {
+                html = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">No records found for this category.</td></tr>';
+            }
+
+            return { html, total };
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // Close modal on click outside (backdrop)
+        modal.addEventListener('click', (e) => {
+            // Close if the click is outside the modal panel property
+            if (!modal.classList.contains('hidden') && !modalPanel.contains(e.target)) {
+                closeModal();
+            }
+        });
+        function getNationalData() {
+            return { name: 'National', stats: {} };
+        }
+
+        function renderNationalBreakdown() {
+            const listContainer = document.createElement('div');
+            listContainer.className = "w-full";
+
+            const header = document.createElement('div');
+            header.className = "flex items-center justify-between mb-4";
+            header.innerHTML = `<h3 class="text-sm font-bold text-slate-700">Regions</h3>`;
+            listContainer.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 gap-4";
+
+            // Sort regions by name
+            const regions = [...database].sort((a, b) => a.name.localeCompare(b.name));
+
+            regions.forEach(r => {
+                // Calc region stats
+                let rStats = { schools: 0, enrolment: 0 };
+                r.provinces.forEach(p => {
+                    rStats.schools += (p.stats.schools || 0);
+                    rStats.enrolment += (p.stats.enrolment || 0);
+                });
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-500 cursor-pointer transition-all group";
+                card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">${r.name}</p>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5">Region</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex gap-6 text-sm">
+                    <div><b class="text-slate-900 block text-lg leading-none mb-1">${rStats.schools.toLocaleString()}</b> <span class="text-slate-400 text-xs">Schools</span></div>
+                    <div><b class="text-slate-900 block text-lg leading-none mb-1">${rStats.enrolment.toLocaleString()}</b> <span class="text-slate-400 text-xs">Students</span></div>
+                </div>
+                `;
+
+                card.onclick = () => {
+                    regionSelect.value = r.name;
+                    regionSelect.dispatchEvent(new Event('input'));
+                };
+                grid.appendChild(card);
+            });
+            listContainer.appendChild(grid);
+            leadershipContent.appendChild(listContainer);
+            lucide.createIcons();
+        }
+        function showNationalBreakdownModal(metric, title) {
+            modalTitle.textContent = title;
+            modalSubtitle.textContent = "National Breakdown by Region";
+
+            // Clear previous table content if any, or hide it
+            // We'll reuse the modal body but replace the table with a grid
+            const container = document.getElementById('modal-table-body').parentElement.parentElement; // The div containing the table
+            // Actually, let's just replace the innerHTML of the modal-panel's main content area div
+            // The modal structure is: modal-panel -> [header, content-div, footer]
+            // content-div has class "px-8 py-6 max-h-[60vh] overflow-y-auto bg-white"
+
+            // It's safer to create a dedicated container or just replace the specific table part.
+            // The existing table is inside a div with class "overflow-hidden rounded-xl border border-slate-200"
+            // Let's replace the modalTableBody with our Grid, but we need to hide the table headers.
+
+            // Hide standard table elements
+            const tableContainer = document.querySelector('#modal-panel table');
+            if (tableContainer) tableContainer.parentElement.style.display = 'none';
+
+            // Check if we already have a grid container, if so clear it, if not create it
+            let listContainer = document.getElementById('national-breakdown-table-wrapper');
+            if (!listContainer) {
+                listContainer = document.createElement('div');
+                listContainer.id = 'national-breakdown-table-wrapper';
+                listContainer.className = "overflow-hidden rounded-xl border border-slate-200 mt-2";
+                const contentDiv = document.getElementById('modal-body-content');
+                contentDiv.appendChild(listContainer);
+            }
+            listContainer.style.display = 'block';
+
+            // Calculate Values first then Sort
+            let regionData = [];
+            let grandTotal = 0;
+
+            database.forEach(r => {
+                let val = 0;
+                // Accumulate based on metric
+                r.provinces.forEach(p => {
+                    const stats = p.stats || {};
+                    // Dynamic access with fallback to if-else if needed, but dynamic is cleaner
+                    // Check if metric exists in stats
+                    if (stats[metric] !== undefined) {
+                        val += stats[metric];
+                    } else {
+                        if (metric === 'schools') val += (stats.schools || 0);
+                        else if (metric === 'enrolment') val += (stats.enrolment || 0);
+                        else if (metric === 'totalClassrooms') val += (stats.totalClassrooms || 0);
+                        else if (metric === 'classroomReq') val += (stats.classroomReq || 0);
+                        else if (metric === 'classroomShortage') val += (stats.classroomShortage || 0);
+                        else if (metric === 'construction') val += (stats.construction || 0);
+                        else if (metric === 'majorRepairs') val += (stats.majorRepairs || 0);
+                        else if (metric === 'majorRepairs') val += (stats.majorRepairs || 0);
+                        else if (metric === 'minorRepairs') val += (stats.minorRepairs || 0);
+                        // New Metrics Fallback (if not strictly in stats object for some reason, though they should be)
+                        else if (metric === 'lms') val += (stats.lms || 0);
+                        else if (metric === 'singleStorey') val += (stats.singleStorey || 0);
+                        else if (metric === 'multiStorey') val += (stats.multiStorey || 0);
+                        else if (metric === 'siteReadiness') val += (stats.siteReadiness || 0);
+                    }
+                });
+                grandTotal += val;
+                // Push even if 0 to show all regions as requested
+                regionData.push({ name: r.name, value: val });
+            });
+
+            // Sort Descending
+            regionData.sort((a, b) => b.value - a.value);
+
+            // Render Table
+            let tableHTML = `
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-indigo-50/50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Region</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100">
+                        `;
+
+            regionData.forEach((item, index) => {
+                tableHTML += `
+                <tr onclick="selectRegion('${item.name}')" class="hover:bg-blue-50 transition-colors cursor-pointer group">
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-400 group-hover:text-blue-400 font-bold">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 group-hover:text-blue-600">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-blue-600">${item.value.toLocaleString()}</td>
+                </tr>
+                `;
+            });
+
+            if (regionData.length === 0) {
+                tableHTML += `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">No data available.</td></tr>`;
+            }
+
+            tableHTML += `</tbody></table>`;
+            listContainer.innerHTML = tableHTML;
+
+            // Helper for click
+            window.selectRegion = (name) => {
+                closeModal();
+                setTimeout(() => {
+                    regionSelect.value = name;
+                    regionSelect.dispatchEvent(new Event('input'));
+                }, 300);
+            };
+
+            document.getElementById('modal-total-display').textContent = grandTotal.toLocaleString();
+
+            // Show Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalPanel.classList.remove('opacity-0', 'scale-95');
+                modalPanel.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function showRegionBreakdownModal(metric, title) {
+            modalTitle.textContent = title;
+            modalSubtitle.textContent = `Provincial Breakdown for ${currentData.name}`;
+
+            // Hide generic table container
+            const tableContainer = document.querySelector('#modal-panel table');
+            if (tableContainer) tableContainer.parentElement.style.display = 'none';
+
+            // Hide previous grid wrapper if it exists (from previous implementation)
+            const gridWrapper = document.getElementById('region-breakdown-grid-wrapper');
+            if (gridWrapper) gridWrapper.style.display = 'none';
+
+            // Create or reuse generic region wrapper
+            let listContainer = document.getElementById('region-breakdown-wrapper');
+            if (!listContainer) {
+                listContainer = document.createElement('div');
+                listContainer.id = 'region-breakdown-wrapper';
+                listContainer.className = "overflow-hidden rounded-xl border border-slate-200 mt-2";
+                const contentDiv = document.getElementById('modal-body-content');
+                contentDiv.appendChild(listContainer);
+            }
+            listContainer.style.display = 'block';
+
+            // Gather province totals
+            const provinceData = [];
+            currentData.provinces.forEach(p => {
+                let total = 0;
+                p.municipalities.forEach(m => {
+                    if (metric === 'schools') {
+                        total += m.schools || (m.schoolList ? m.schoolList.length : 0);
+                    } else {
+                        total += m[metric] || 0;
+                    }
+                });
+                provinceData.push({ province: p, total });
+            });
+
+            // Sort descending by total
+            provinceData.sort((a, b) => b.total - a.total);
+
+            // Render Table
+            let tableHTML = `
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-indigo-50/50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-12">#</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Province</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100">
+                        `;
+
+            provinceData.forEach((item, index) => {
+                const p = item.province;
+                const total = item.total;
+                const safeName = p.name.replace(/'/g, "\\'");
+                tableHTML += `
+                        <tr onclick="selectProvinceBreakdown('${safeName}')" class="hover:bg-blue-50 transition-colors cursor-pointer group">
+                            <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-400 group-hover:text-blue-400 font-bold">${index + 1}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 group-hover:text-blue-600">${p.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-blue-600">${total.toLocaleString()}</td>
+                        </tr>
+                        `;
+            });
+
+            if (provinceData.length === 0) {
+                tableHTML += `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">No data available.</td></tr>`;
+            }
+
+            tableHTML += `</tbody></table>`;
+            listContainer.innerHTML = tableHTML;
+
+            // Helper for click
+            window.selectProvinceBreakdown = (name) => {
+                provinceSelect.value = name;
+                provinceSelect.dispatchEvent(new Event('change'));
+                closeModal();
+            };
+
+            // Update total display (optional, can leave empty or show grand total)
+            document.getElementById('modal-total-display').textContent = '';
+
+            // Show Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalPanel.classList.remove('opacity-0', 'scale-95');
+                modalPanel.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+
+        // Hook into closeModal to reset view state (show table again)
+        // Redefine global closeModal to include cleanup
+        window.closeModal = function () {
+            modalBackdrop.classList.add('opacity-0');
+            modalPanel.classList.remove('opacity-100', 'scale-100');
+            modalPanel.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+
+                // Reset visibility after close animation
+                const tableContainer = document.querySelector('#modal-panel table');
+                if (tableContainer) tableContainer.parentElement.style.display = 'block';
+                const gridContainer = document.getElementById('national-breakdown-grid');
+                if (gridContainer) gridContainer.style.display = 'none';
+                const tableWrapper = document.getElementById('national-breakdown-table-wrapper');
+                if (tableWrapper) tableWrapper.style.display = 'none';
+                const regionWrapper = document.getElementById('region-breakdown-wrapper');
+                if (regionWrapper) regionWrapper.style.display = 'none';
+            }, 300);
+        };
+    </script>
+</body>
+
+</html>
